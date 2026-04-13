@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ technique.name }}{% endblock %}
+
+{% block content %}
+<div class="content-wrap" style="flex-direction:column;max-width:760px;">
+    <p style="font-size:.85rem;margin-bottom:12px;"><a href="/techniques/" style="color:#c0392b;font-weight:600;">&larr; Back to techniques</a></p>
+
+    <h1 style="font-size:2rem;font-weight:800;color:#1a1a1a;margin-bottom:8px;">{{ technique.name }}</h1>
+    <p style="color:#666;font-size:.88rem;margin-bottom:16px;">by <strong>{{ technique.author.first_name }} {{ technique.author.last_name }}</strong></p>
+
+    <div style="margin-bottom:22px;">
+        {% for r in technique.regions.all %}<span style="display:inline-block;background:#c0392b;color:#fff;font-size:.72rem;padding:3px 10px;border-radius:3px;font-weight:600;margin-right:4px;">{{ r.name }}</span>{% endfor %}
+    </div>
+
+    <h3 class="section-title">Description</h3>
+    <p style="white-space:pre-wrap;line-height:1.7;color:#333;margin-bottom:28px;">{{ technique.description }}</p>
+
+    {% if technique.cultural_significance %}
+    <h3 class="section-title">Cultural Significance</h3>
+    <p style="white-space:pre-wrap;line-height:1.7;color:#333;margin-bottom:28px;">{{ technique.cultural_significance }}</p>
+    {% endif %}
+</div>
+{% endblock %}

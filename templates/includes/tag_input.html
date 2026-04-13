@@ -1,0 +1,125 @@
+{# params: prefix, field, label, items, placeholder, required #}
+<div class="form-group">
+    <label>{{ label }}</label>
+    <div id="{{ prefix }}-wrap" style="border:1.5px solid #ddd;border-radius:6px;padding:8px;background:#fafafa;min-height:46px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;position:relative;">
+        <div id="{{ prefix }}-chips" style="display:contents;"></div>
+        <input type="text" id="{{ prefix }}-input" autocomplete="off" placeholder="{{ placeholder }}"
+               style="flex:1;min-width:140px;border:none;outline:none;background:transparent;font-size:.92rem;padding:4px;">
+        <div id="{{ prefix }}-suggest" style="position:absolute;top:100%;left:0;right:0;z-index:10;"></div>
+    </div>
+    <p style="font-size:.72rem;color:#888;margin-top:4px;">Type and press Enter or comma. Typos are auto-corrected to the closest match.</p>
+    <div id="{{ prefix }}-hidden"></div>
+</div>
+<script>
+(function(){
+    var ITEMS = [{% for it in items %}{id:{{ it.pk }},name:"{{ it.name|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}];
+    var PREFIX = "{{ prefix }}";
+    var FIELD = "{{ field }}";
+    var REQUIRED = {% if required %}true{% else %}false{% endif %};
+    var chips = document.getElementById(PREFIX + '-chips');
+    var input = document.getElementById(PREFIX + '-input');
+    var suggest = document.getElementById(PREFIX + '-suggest');
+    var hidden = document.getElementById(PREFIX + '-hidden');
+    var selected = {};
+
+    function lev(a,b){
+        a=a.toLowerCase(); b=b.toLowerCase();
+        var m=a.length, n=b.length;
+        if(!m) return n; if(!n) return m;
+        var dp=[];
+        for(var i=0;i<=m;i++){ var row=[i]; for(var j=1;j<=n;j++) row.push(0); dp.push(row); }
+        for(var j=0;j<=n;j++) dp[0][j]=j;
+        for(var i=1;i<=m;i++) for(var j=1;j<=n;j++){
+            dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);
+        }
+        return dp[m][n];
+    }
+
+    function closest(q){
+        q = q.trim().toLowerCase();
+        if(!q) return null;
+        for(var i=0;i<ITEMS.length;i++) if(ITEMS[i].name.toLowerCase()===q) return ITEMS[i];
+        for(var i=0;i<ITEMS.length;i++) if(ITEMS[i].name.toLowerCase().indexOf(q)===0) return ITEMS[i];
+        var best=null, bestD=Infinity;
+        for(var i=0;i<ITEMS.length;i++){
+            var d = lev(q, ITEMS[i].name);
+            if(d<bestD){ bestD=d; best=ITEMS[i]; }
+        }
+        if(best && bestD <= Math.max(3, Math.floor(best.name.length/2))) return best;
+        return null;
+    }
+
+    function addChip(item){
+        if(!item || selected[item.id]) return;
+        selected[item.id] = true;
+        var chip = document.createElement('span');
+        chip.style.cssText = 'background:#c0392b;color:#fff;padding:4px 10px;border-radius:14px;font-size:.78rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;';
+        chip.textContent = item.name + ' ';
+        var x = document.createElement('span');
+        x.textContent = '×';
+        x.style.cssText = 'cursor:pointer;font-weight:700;';
+        x.addEventListener('click', function(){
+            delete selected[item.id];
+            chip.remove();
+            var h = document.getElementById(PREFIX + '-h-' + item.id);
+            if(h) h.remove();
+        });
+        chip.appendChild(x);
+        chips.appendChild(chip);
+        var h = document.createElement('input');
+        h.type='hidden'; h.name=FIELD; h.value=item.id; h.id=PREFIX+'-h-'+item.id;
+        hidden.appendChild(h);
+    }
+
+    function renderSuggest(q){
+        suggest.innerHTML = '';
+        if(!q.trim()) return;
+        var ql = q.toLowerCase();
+        var prefixMatches = [], contain = [];
+        for(var i=0;i<ITEMS.length;i++){
+            var nl = ITEMS[i].name.toLowerCase();
+            if(nl.indexOf(ql)===0) prefixMatches.push(ITEMS[i]);
+            else if(nl.indexOf(ql)>-1) contain.push(ITEMS[i]);
+        }
+        var matches = prefixMatches.concat(contain).slice(0,6);
+        if(!matches.length){
+            var c = closest(q);
+            if(c) matches = [c];
+        }
+        if(!matches.length) return;
+        var box = document.createElement('div');
+        box.style.cssText = 'background:#fff;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.12);margin-top:4px;max-height:220px;overflow:auto;';
+        matches.forEach(function(r){
+            var item = document.createElement('div');
+            item.textContent = r.name;
+            item.style.cssText='padding:8px 12px;cursor:pointer;font-size:.88rem;';
+            item.addEventListener('mousedown', function(e){ e.preventDefault(); addChip(r); input.value=''; suggest.innerHTML=''; });
+            item.addEventListener('mouseenter', function(){ item.style.background='#f5f5f5'; });
+            item.addEventListener('mouseleave', function(){ item.style.background='#fff'; });
+            box.appendChild(item);
+        });
+        suggest.appendChild(box);
+    }
+
+    input.addEventListener('input', function(){ renderSuggest(input.value); });
+    input.addEventListener('keydown', function(e){
+        if(e.key==='Enter' || e.key===','){
+            e.preventDefault();
+            var r = closest(input.value);
+            if(r){ addChip(r); input.value=''; suggest.innerHTML=''; }
+        } else if(e.key==='Backspace' && !input.value && chips.lastChild){
+            chips.lastChild.querySelector('span').click();
+        }
+    });
+    input.addEventListener('blur', function(){ setTimeout(function(){ suggest.innerHTML=''; }, 150); });
+    if(REQUIRED && input.form){
+        input.form.addEventListener('submit', function(e){
+            if(Object.keys(selected).length===0){
+                e.preventDefault();
+                input.focus();
+                alert('Please add at least one ' + (PREFIX.replace('-',' ')) + '.');
+            }
+        });
+    }
+})();
+</script>

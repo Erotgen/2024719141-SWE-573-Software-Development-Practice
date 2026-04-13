@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+    <h1>Welcome, {{ user.first_name }} {{ user.last_name }}</h1>
+    <p>Your culinary dashboard — manage and discover recipes from your region.</p>
+    <span class="region-badge">&#127759; {{ region_name }}</span>
+    <div class="dash-actions">
+        <a href="/recipes/add/" class="nav-btn" style="background:#c0392b;border-color:#c0392b;">+ Add Recipe</a>
+        <a href="/techniques/add/" class="nav-btn" style="background:#c0392b;border-color:#c0392b;">+ Add Technique</a>
+        <a href="/ingredients/add/" class="nav-btn" style="background:#c0392b;border-color:#c0392b;">+ Add Ingredient</a>
+        <a href="/recipes/" class="nav-btn">Browse All</a>
+    </div>
+</div>
+<div class="content-wrap" style="flex-direction:column;">
+    <h3 class="section-title">My Latest Entries</h3>
+    <div class="recipe-grid">
+        {% for recipe in my_recipes %}
+            {% include "includes/recipe_card.html" with recipe=recipe %}
+        {% empty %}
+            <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">
+                You haven't added any recipes yet. Start sharing your dishes!
+            </div>
+        {% endfor %}
+    </div>
+
+    <h3 class="section-title" style="margin-top:40px;">Latest Entries from Others</h3>
+    <div class="recipe-grid">
+        {% for recipe in others_recipes %}
+            {% include "includes/recipe_card.html" with recipe=recipe %}
+        {% empty %}
+            <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">
+                No recipes from others yet.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

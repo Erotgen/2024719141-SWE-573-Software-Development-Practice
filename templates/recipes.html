@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Recipes{% endblock %}
+
+{% block content %}
+<div class="content-wrap" style="flex-direction:column;">
+    <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:20px;">Browse Recipes</h2>
+    <div class="recipe-grid">
+        {% for recipe in recipes %}
+            {% include "includes/recipe_card.html" with recipe=recipe %}
+        {% empty %}
+            <p style="color:#888;padding:30px;text-align:center;">No recipes in this category yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

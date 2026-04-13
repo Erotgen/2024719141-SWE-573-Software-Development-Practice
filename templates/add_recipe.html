@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Add Recipe{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card" style="width:480px;">
+        <h2>Add a Recipe</h2>
+        <p class="subtitle">Share your recipe with one or more countries</p>
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+        <form method="post" action="/recipes/add/" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Recipe Title</label>
+                <input type="text" name="title" placeholder="Lentil Soup" required>
+            </div>
+            <div class="form-group">
+                <label>Instructions</label>
+                <textarea name="content" placeholder="List ingredients, then describe the steps..." rows="6"
+                    required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Cultural Significance <span style="font-weight:400;color:#888;">(optional)</span></label>
+                <textarea name="cultural_significance" rows="4" placeholder="History, traditions, occasions this dish is tied to..."></textarea>
+            </div>
+            <div style="display:flex;gap:12px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Cook Time (min)</label>
+                    <input type="number" name="cook_time" value="30" min="1" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Difficulty</label>
+                    <select name="difficulty">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            {% include "includes/tag_input.html" with prefix="country" field="region_ids" label="Countries *" items=regions placeholder="Type a country…" required=True %}
+            {% include "includes/tag_input.html" with prefix="ingredient" field="ingredient_ids" label="Ingredients" items=all_ingredients placeholder="Type an ingredient…" required=False %}
+            {% include "includes/tag_input.html" with prefix="technique" field="technique_ids" label="Techniques" items=all_techniques placeholder="Type a technique…" required=False %}
+            <div class="form-group">
+                <label>Photo <span style="font-weight:400;color:#888;">(optional)</span></label>
+                <input type="file" name="image" accept="image/*">
+            </div>
+            <button type="submit" class="form-submit">Publish Recipe</button>
+        </form>
+        <p class="form-footer"><a href="/entry/">&larr; Back to dashboard</a></p>
+    </div>
+</div>
+{% endblock %}

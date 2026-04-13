@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Master the Art<br>of Flavor.</h1>
+        <p>Explore delicious recipes from every region, share your culinary creations, and connect with food lovers.</p>
+        <a href="/recipes/" class="hero-btn">Browse Recipes</a>
+    </div>
+</section>
+
+<div class="content-wrap">
+    <div class="main-col">
+        <section class="about-section" id="about">
+            <h2>About Culinary Graph: Your Culinary Journey Starts Here</h2>
+            <p>We are more than just recipes. Culinary Graph is a comprehensive platform for home cooks and food enthusiasts,
+            dedicated to providing expertly curated recipes from regions around the world. Our mission is to empower you to
+            find confidence in the kitchen and make every meal an experience. Explore, learn, and cook with us.</p>
+        </section>
+
+        <h3 class="section-title">Featured Recipes</h3>
+        <div class="recipe-grid">
+            {% for recipe in recipes %}
+                {% include "includes/recipe_card.html" with recipe=recipe %}
+            {% empty %}
+                <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">
+                    No recipes yet. <a href="/register/" style="color:#c0392b;font-weight:600;">Join</a> and be the first to share!
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

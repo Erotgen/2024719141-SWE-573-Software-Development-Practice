@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Add Technique{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card" style="width:480px;">
+        <h2>Add a Technique</h2>
+        <p class="subtitle">Share a technique with one or more countries</p>
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+        <form method="post" action="/techniques/add/">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name" placeholder="e.g. Sous Vide" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="6" placeholder="Describe the technique, when to use it, and tips..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Cultural Significance <span style="font-weight:400;color:#888;">(optional)</span></label>
+                <textarea name="cultural_significance" rows="4" placeholder="Origin, traditions, cultural role of this technique..."></textarea>
+            </div>
+            {% include "includes/tag_input.html" with prefix="country" field="region_ids" label="Countries *" items=regions placeholder="Type a country…" required=True %}
+            <button type="submit" class="form-submit">Publish Technique</button>
+        </form>
+        <p class="form-footer"><a href="/entry/">&larr; Back to dashboard</a></p>
+    </div>
+</div>
+{% endblock %}

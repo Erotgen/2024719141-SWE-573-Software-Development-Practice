@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+
+# Secrets & local config
+.env
+.env.*
+!.env.example
+
+# Editors / tools
+.claude/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Database dumps (local snapshots)
+*.sql

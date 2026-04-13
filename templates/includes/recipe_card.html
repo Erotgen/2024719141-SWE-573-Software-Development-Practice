@@ -1,0 +1,16 @@
+<a href="/recipes/{{ recipe.pk }}/" class="{{ card_class|default:'recipe-card' }}" style="color:inherit;">
+{% if recipe.image and recipe.image.name %}
+    <img src="{{ recipe.image.url }}" class="card-img" alt="{{ recipe.title }}">
+{% else %}
+    <div class="card-img-placeholder">&#127835;</div>
+{% endif %}
+    <div class="card-body">
+        <h3>{{ recipe.title }}</h3>
+        <div class="card-meta">
+            <span>&#128337; {{ recipe.cook_time }} min</span>
+            <span>{{ recipe.difficulty }}</span>
+        </div>
+        {% if not small %}<p>{{ recipe.content|truncatechars:100 }}</p>{% endif %}
+        {% for r in recipe.regions.all %}<span class="card-region" style="margin-right:4px;">{{ r.name }}</span>{% endfor %}
+    </div>
+</a>

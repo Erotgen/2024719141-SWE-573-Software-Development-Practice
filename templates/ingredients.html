@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Ingredients{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+    <h1>Ingredients</h1>
+    <p>Discover ingredients from around the world.</p>
+    <div class="dash-actions">
+        <a href="/ingredients/add/" class="nav-btn" style="background:#c0392b;border-color:#c0392b;">+ Add Ingredient</a>
+    </div>
+</div>
+<div class="content-wrap" style="flex-direction:column;">
+    <h3 class="section-title">All Ingredients</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;justify-content:flex-start;">
+        {% for i in ingredients %}
+        <a href="/ingredients/{{ i.pk }}/" style="background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.1);padding:18px;display:block;color:inherit;transition:transform .2s,box-shadow .2s;width:240px;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.15)';" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 12px rgba(0,0,0,.1)';">
+            <h3 style="font-size:1rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">{{ i.name }}</h3>
+            {% if i.description %}
+            <p style="font-size:.85rem;color:#555;line-height:1.5;">{{ i.description|truncatechars:160 }}</p>
+            {% endif %}
+            <div style="margin-top:10px;">{% for r in i.regions.all %}<span style="display:inline-block;background:#c0392b;color:#fff;font-size:.7rem;padding:3px 10px;border-radius:3px;font-weight:600;margin-right:4px;margin-bottom:4px;">{{ r.name }}</span>{% endfor %}</div>
+            <p style="font-size:.72rem;color:#888;margin-top:6px;">by {{ i.author.first_name }} {{ i.author.last_name }}</p>
+        </a>
+        {% empty %}
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">
+            No ingredients yet. Be the first to add one!
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

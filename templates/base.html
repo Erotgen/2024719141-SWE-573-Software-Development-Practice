@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CulinaryGraph — {% block title %}Home{% endblock %}</title>
+<style>
+/* ── Reset ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:#333; background:#fff;
+    min-height:100vh; display:flex; flex-direction:column; }
+main.page { flex:1; display:flex; flex-direction:column; }
+a { text-decoration:none; color:inherit; }
+
+/* ── Header / Nav ── */
+.header {
+    background:#1a1a1a; display:flex; align-items:center; justify-content:space-between;
+    padding:0 40px; height:60px; position:sticky; top:0; z-index:100;
+}
+.logo { font-size:1.35rem; font-weight:800; letter-spacing:2px; color:#fff; }
+.logo span { color:#c0392b; }
+.nav-right { display:flex; align-items:center; gap:24px; }
+.nav-right a:not(.nav-btn) {
+    color:#fff; font-size:.82rem; font-weight:600; letter-spacing:1.2px;
+    text-transform:uppercase; transition:color .2s;
+}
+.nav-right a:not(.nav-btn):hover { color:#c0392b; }
+.nav-btn {
+    background:transparent; border:1.5px solid #fff; color:#fff; padding:7px 18px;
+    border-radius:4px; font-size:.82rem; font-weight:600; cursor:pointer;
+    letter-spacing:.5px; transition:all .2s; display:inline-block;
+}
+.nav-btn:hover { background:#c0392b; border-color:#c0392b; }
+.nav-user { color:#ccc; font-size:.85rem; }
+.nav-user strong { color:#fff; }
+
+/* ── Hero ── */
+.hero {
+    position:relative; height:440px; display:flex; align-items:center;
+    background:linear-gradient(135deg, #1a0a00 0%, #3e1f0d 35%, #6b3a1f 65%, #8b5e3c 100%);
+    overflow:hidden;
+}
+.hero::after {
+    content:''; position:absolute; inset:0;
+    background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440"><defs><radialGradient id="g1" cx="70%25" cy="40%25" r="55%25"><stop offset="0%25" stop-color="%23d4a056" stop-opacity="0.3"/><stop offset="100%25" stop-color="transparent"/></radialGradient></defs><rect fill="url(%23g1)" width="1200" height="440"/><circle cx="900" cy="220" r="160" fill="%23c0392b" opacity="0.08"/><circle cx="750" cy="300" r="80" fill="%23e67e22" opacity="0.1"/></svg>') center/cover;
+}
+.hero-content { position:relative; z-index:1; padding:0 60px; max-width:600px; }
+.hero h1 { font-size:3rem; font-weight:800; color:#fff; line-height:1.15; margin-bottom:18px; text-transform:uppercase; letter-spacing:1px; }
+.hero p { color:rgba(255,255,255,.85); font-size:1.05rem; line-height:1.6; margin-bottom:28px; }
+.hero-btn {
+    display:inline-block; background:#c0392b; color:#fff; padding:14px 32px;
+    font-size:.95rem; font-weight:700; border-radius:4px; letter-spacing:1px;
+    text-transform:uppercase; transition:background .2s; border:none; cursor:pointer;
+}
+.hero-btn:hover { background:#a93226; }
+
+/* ── Section Titles ── */
+.section-title {
+    font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+    color:#1a1a1a; margin-bottom:18px; padding-bottom:10px;
+    border-bottom:3px solid #c0392b; display:inline-block;
+}
+
+/* ── Content Layout ── */
+.content-wrap { max-width:1200px; margin:0 auto; padding:35px 40px; display:flex; gap:35px; }
+.main-col { flex:1; min-width:0; }
+
+/* ── About Section ── */
+.about-section {
+    background:#f9f5ef; border-left:4px solid #c0392b; padding:22px 28px;
+    margin-bottom:30px; border-radius:0 6px 6px 0;
+}
+.about-section h2 { font-size:.95rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#c0392b; margin-bottom:10px; }
+.about-section p { font-size:.9rem; line-height:1.7; color:#444; }
+
+/* ── Recipe Cards ── */
+.recipe-grid { display:flex; flex-wrap:wrap; gap:20px; justify-content:flex-start; }
+.recipe-grid > * { width:220px; }
+.recipe-card {
+    background:#fff; border-radius:8px; overflow:hidden;
+    box-shadow:0 2px 12px rgba(0,0,0,.1); transition:transform .2s, box-shadow .2s;
+    display:flex; flex-direction:column;
+}
+.recipe-card:hover { transform:translateY(-4px); box-shadow:0 6px 20px rgba(0,0,0,.15); }
+.card-img { height:180px; width:100%; object-fit:cover; display:block; background:#ddd; }
+.card-img-placeholder {
+    height:180px; width:100%; display:flex; align-items:center; justify-content:center;
+    font-size:3rem; color:rgba(255,255,255,.7);
+}
+.card-body { padding:14px 16px; flex:1; display:flex; flex-direction:column; }
+.card-body h3 { font-size:.95rem; font-weight:700; margin-bottom:6px; color:#1a1a1a; }
+.card-meta { font-size:.78rem; color:#888; display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.card-meta .stars { color:#f39c12; letter-spacing:1px; }
+.card-body p { font-size:.82rem; color:#555; line-height:1.5; flex:1; }
+.card-region { display:inline-block; background:#c0392b; color:#fff; font-size:.7rem; padding:3px 10px; border-radius:3px; font-weight:600; margin-top:10px; align-self:flex-start; }
+
+/* ── Placeholder gradient cycling via nth-child ── */
+.recipe-grid .recipe-card:nth-child(8n+1) .card-img-placeholder { background:linear-gradient(135deg,#7CB342,#AED581); }
+.recipe-grid .recipe-card:nth-child(8n+2) .card-img-placeholder { background:linear-gradient(135deg,#8D6E63,#BCAAA4); }
+.recipe-grid .recipe-card:nth-child(8n+3) .card-img-placeholder { background:linear-gradient(135deg,#FF8A65,#FFCCBC); }
+.recipe-grid .recipe-card:nth-child(8n+4) .card-img-placeholder { background:linear-gradient(135deg,#E53935,#EF9A9A); }
+.recipe-grid .recipe-card:nth-child(8n+5) .card-img-placeholder { background:linear-gradient(135deg,#FDD835,#FFF9C4); }
+.recipe-grid .recipe-card:nth-child(8n+6) .card-img-placeholder { background:linear-gradient(135deg,#26A69A,#B2DFDB); }
+.recipe-grid .recipe-card:nth-child(8n+7) .card-img-placeholder { background:linear-gradient(135deg,#5C6BC0,#C5CAE9); }
+.recipe-grid .recipe-card:nth-child(8n+8) .card-img-placeholder { background:linear-gradient(135deg,#AB47BC,#E1BEE7); }
+
+/* ── Footer ── */
+.footer { background:#1a1a1a; color:rgba(255,255,255,.6); text-align:center; padding:22px 40px; font-size:.8rem; }
+.footer a { color:#c0392b; }
+
+/* ── Forms ── */
+.form-page { min-height:calc(100vh - 60px); display:flex; align-items:center; justify-content:center; padding:40px 20px; background:#f5f5f5; }
+.form-card { background:#fff; border-radius:10px; padding:40px 36px; width:420px; max-width:100%; box-shadow:0 4px 24px rgba(0,0,0,.1); }
+.form-card h2 { font-size:1.6rem; font-weight:700; color:#1a1a1a; margin-bottom:6px; text-align:center; }
+.form-card .subtitle { text-align:center; color:#888; font-size:.88rem; margin-bottom:28px; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:.82rem; font-weight:600; margin-bottom:5px; color:#444; text-transform:uppercase; letter-spacing:.5px; }
+.form-group input, .form-group select, .form-group textarea {
+    width:100%; padding:11px 14px; font-size:.92rem; border:1.5px solid #ddd;
+    border-radius:6px; outline:none; font-family:inherit; transition:border-color .2s; background:#fafafa;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#c0392b; background:#fff; }
+.form-group textarea { resize:vertical; min-height:90px; }
+.form-group select { cursor:pointer; }
+.form-submit {
+    width:100%; padding:13px; background:#c0392b; color:#fff; border:none;
+    border-radius:6px; font-size:1rem; font-weight:700; cursor:pointer;
+    letter-spacing:.5px; transition:background .2s; margin-top:8px;
+}
+.form-submit:hover { background:#a93226; }
+.form-footer { text-align:center; margin-top:18px; font-size:.88rem; color:#888; }
+.form-footer a { color:#c0392b; font-weight:600; }
+.alert { padding:10px 14px; border-radius:5px; font-size:.88rem; font-weight:600; margin-bottom:16px; }
+.alert-error { background:#fdecea; color:#c0392b; border:1px solid #f5c6cb; }
+.alert-success { background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9; }
+
+/* ── Dashboard ── */
+.dash-header { background:linear-gradient(135deg,#1a1a1a 0%,#2c2c2c 100%); padding:35px 40px; color:#fff; }
+.dash-header h1 { font-size:1.8rem; font-weight:700; margin-bottom:6px; }
+.dash-header p { color:rgba(255,255,255,.7); font-size:.92rem; }
+.dash-header .region-badge { display:inline-block; background:#c0392b; padding:5px 14px; border-radius:4px; font-size:.82rem; font-weight:600; margin-top:10px; }
+.dash-actions { display:flex; gap:12px; margin:20px 0 0 0; flex-wrap:wrap; }
+.dash-actions .nav-btn { font-size:.85rem; padding:9px 22px; }
+
+/* ── Hamburger ── */
+.hamburger { display:none; background:none; border:none; cursor:pointer; padding:4px; }
+.hamburger span { display:block; width:22px; height:2px; background:#fff; margin:5px 0; transition:all .3s; }
+
+/* ── Responsive ── */
+@media(max-width:900px){
+    .content-wrap { flex-direction:column; padding:20px; }
+    .hero { height:320px; }
+    .hero h1 { font-size:2rem; }
+    .hero-content { padding:0 30px; }
+    .recipe-grid > * { width:180px; }
+}
+@media(max-width:640px){
+    .header { padding:0 16px; }
+    .nav-right { display:none; position:absolute; top:60px; right:0; background:#1a1a1a;
+        flex-direction:column; padding:16px 24px; gap:14px; border-radius:0 0 0 8px; min-width:180px; }
+    .nav-right.open { display:flex; }
+    .hamburger { display:block; }
+    .hero { height:280px; }
+    .hero h1 { font-size:1.6rem; }
+    .recipe-grid > * { width:100%; }
+    .form-card { padding:28px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <a href="/" class="logo">CULINARY<span>GRAPH</span></a>
+
+    <button class="hamburger" onclick="document.getElementById('navRight').classList.toggle('open')">
+        <span></span><span></span><span></span>
+    </button>
+
+    <div class="nav-right" id="navRight">
+    {% if user.is_authenticated %}
+        <a href="/">Home</a>
+        <a href="/recipes/">Recipes</a>
+        <a href="/ingredients/">Ingredients</a>
+        <a href="/techniques/">Techniques</a>
+        <a href="/culinary-road/">Culinary Road</a>
+        <a href="/culinary-data/">Culinary Data</a>
+        <a href="/profile/">My Profile</a>
+        <span class="nav-user">Welcome, <strong>{{ user.first_name }}</strong></span>
+        <a href="/logout/" class="nav-btn">Logout</a>
+    {% else %}
+        <a href="/login/" class="nav-btn">Log In</a>
+        <a href="/register/" class="nav-btn" style="background:#c0392b;border-color:#c0392b;">Join</a>
+    {% endif %}
+    </div>
+</header>
+
+<main class="page">
+{% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    &copy; 2026 CulinaryGraph. All Rights Reserved. Built with Django.
+</footer>
+
+</body>
+</html>

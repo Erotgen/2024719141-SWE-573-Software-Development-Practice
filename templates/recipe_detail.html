@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.title }}{% endblock %}
+
+{% block content %}
+<div class="content-wrap" style="flex-direction:column;max-width:860px;">
+    <p style="font-size:.85rem;margin-bottom:12px;"><a href="/recipes/" style="color:#c0392b;font-weight:600;">&larr; Back to recipes</a></p>
+
+    {% if recipe.image and recipe.image.name %}
+    <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" style="width:100%;max-height:380px;object-fit:cover;border-radius:8px;margin-bottom:20px;">
+    {% endif %}
+
+    <h1 style="font-size:2rem;font-weight:800;color:#1a1a1a;margin-bottom:8px;">{{ recipe.title }}</h1>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;color:#666;font-size:.88rem;margin-bottom:18px;">
+        <span>by <strong>{{ recipe.author.first_name }} {{ recipe.author.last_name }}</strong></span>
+        <span>&#128337; {{ recipe.cook_time }} min</span>
+        <span>{{ recipe.difficulty }}</span>
+    </div>
+
+    <div style="margin-bottom:22px;">
+        {% for r in recipe.regions.all %}<span style="display:inline-block;background:#c0392b;color:#fff;font-size:.72rem;padding:3px 10px;border-radius:3px;font-weight:600;margin-right:4px;">{{ r.name }}</span>{% endfor %}
+    </div>
+
+    <h3 class="section-title">Instructions</h3>
+    <p style="white-space:pre-wrap;line-height:1.7;color:#333;margin-bottom:28px;">{{ recipe.content }}</p>
+
+    {% if recipe.cultural_significance %}
+    <h3 class="section-title">Cultural Significance</h3>
+    <p style="white-space:pre-wrap;line-height:1.7;color:#333;margin-bottom:28px;">{{ recipe.cultural_significance }}</p>
+    {% endif %}
+
+    {% if recipe.ingredients.all %}
+    <h3 class="section-title">Ingredients</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">
+        {% for i in recipe.ingredients.all %}
+        <a href="/ingredients/{{ i.pk }}/" style="background:#f5f5f5;border:1px solid #ddd;padding:6px 14px;border-radius:18px;font-size:.85rem;color:#333;font-weight:600;">{{ i.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if recipe.techniques.all %}
+    <h3 class="section-title">Techniques</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">
+        {% for t in recipe.techniques.all %}
+        <a href="/techniques/{{ t.pk }}/" style="background:#f5f5f5;border:1px solid #ddd;padding:6px 14px;border-radius:18px;font-size:.85rem;color:#333;font-weight:600;">{{ t.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

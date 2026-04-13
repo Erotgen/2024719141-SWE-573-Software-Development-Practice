@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card" style="width:520px;">
+        <h2>My Profile</h2>
+        <p class="subtitle">Manage your personal information</p>
+
+        {% if required_msg %}<div class="alert alert-error">{{ required_msg }}</div>{% endif %}
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+        {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
+
+        <form method="post" action="/profile/" enctype="multipart/form-data">
+            {% if profile.profile_photo %}
+            <div style="text-align:center;margin-bottom:18px;">
+                <img src="{{ profile.profile_photo.url }}" alt="Profile"
+                    style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid #c0392b;">
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label>Profile Picture <span style="font-weight:400;color:#888;">(optional)</span></label>
+                <input type="file" name="profile_photo" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label>Country *</label>
+                {% if profile.sharing_region %}
+                <input type="text" value="{{ profile.sharing_region.name }}" disabled
+                    style="background:#eee;cursor:not-allowed;">
+                <p style="font-size:.72rem;color:#888;margin-top:4px;">Country cannot be changed once set.</p>
+                {% else %}
+                <select name="region_id" required>
+                    <option value="">— Select your country —</option>
+                    {% for r in regions %}
+                    <option value="{{ r.pk }}">{{ r.name }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label>About Me *</label>
+                <textarea name="description" placeholder="Tell us about yourself and your cooking..."
+                    required>{{ profile.description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Date of Birth *</label>
+                <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Gender *</label>
+                <select name="gender" required>
+                    <option value="">— Select —</option>
+                    <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+                    <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+                    <option value="prefer_not" {% if profile.gender == 'prefer_not' %}selected{% endif %}>Prefer not to say</option>
+                </select>
+            </div>
+
+            <button type="submit" class="form-submit">Save Profile</button>
+        </form>
+        <p class="form-footer"><a href="/entry/">&larr; Back to dashboard</a></p>
+    </div>
+</div>
+{% endblock %}

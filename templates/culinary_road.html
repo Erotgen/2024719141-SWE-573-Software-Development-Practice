@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Culinary Road{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+    <h1>Culinary Road</h1>
+    <p>Explore the world's flavors, one region at a time.</p>
+</div>
+<div class="content-wrap" style="flex-direction:column;">
+    <div style="position:relative;width:100%;max-width:900px;margin:0 auto;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/1200px-World_map_-_low_resolution.svg.png"
+             alt="World Map" style="width:100%;display:block;border-radius:8px;opacity:.85;">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <span style="background:rgba(192,57,43,.92);color:#fff;padding:14px 34px;font-size:1.6rem;
+                         font-weight:800;letter-spacing:2px;text-transform:uppercase;border-radius:6px;
+                         box-shadow:0 4px 18px rgba(0,0,0,.3);">Under Construction</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

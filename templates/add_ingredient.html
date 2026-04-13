@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Add Ingredient{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card" style="width:480px;">
+        <h2>Add an Ingredient</h2>
+        <p class="subtitle">Share an ingredient with one or more countries</p>
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+        <form method="post" action="/ingredients/add/">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name" placeholder="e.g. Saffron" required>
+            </div>
+            <div class="form-group">
+                <label>Description <span style="font-weight:400;color:#888;">(optional)</span></label>
+                <textarea name="description" rows="5" placeholder="Origin, flavor, common uses..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Cultural Significance <span style="font-weight:400;color:#888;">(optional)</span></label>
+                <textarea name="cultural_significance" rows="4" placeholder="Cultural role, traditional dishes, regional importance..."></textarea>
+            </div>
+            {% include "includes/tag_input.html" with prefix="country" field="region_ids" label="Countries *" items=regions placeholder="Type a country…" required=True %}
+            <button type="submit" class="form-submit">Publish Ingredient</button>
+        </form>
+        <p class="form-footer"><a href="/entry/">&larr; Back to dashboard</a></p>
+    </div>
+</div>
+{% endblock %}
