@@ -186,8 +186,8 @@ def add_recipe_page(request):
         technique_ids = list(Technique.objects.filter(
             pk__in=request.POST.getlist('technique_ids')
         ).values_list('pk', flat=True))
-        if not title or not content:
-            error = 'Title and content are required.'
+        if not title or not content or not cultural_significance:
+            error = 'Title, instructions and cultural significance are required.'
         elif not region_ids:
             error = 'Select at least one country.'
         else:
@@ -257,15 +257,16 @@ def add_technique_page(request):
     if request.method == 'POST':
         name = (request.POST.get('name') or '').strip()
         description = (request.POST.get('description') or '').strip()
+        cultural_significance = (request.POST.get('cultural_significance') or '').strip()
         region_ids = _parse_region_ids(request)
-        if not name or not description:
-            error = 'Name and description are required.'
+        if not name or not description or not cultural_significance:
+            error = 'Name, description and cultural significance are required.'
         elif not region_ids:
             error = 'Select at least one country.'
         else:
             technique = Technique.objects.create(
                 author=request.user, name=name, description=description,
-                cultural_significance=(request.POST.get('cultural_significance') or '').strip(),
+                cultural_significance=cultural_significance,
             )
             technique.regions.set(region_ids)
             return redirect('/techniques/')
@@ -293,15 +294,16 @@ def add_ingredient_page(request):
     if request.method == 'POST':
         name = (request.POST.get('name') or '').strip()
         description = (request.POST.get('description') or '').strip()
+        cultural_significance = (request.POST.get('cultural_significance') or '').strip()
         region_ids = _parse_region_ids(request)
-        if not name:
-            error = 'Name is required.'
+        if not name or not description or not cultural_significance:
+            error = 'Name, description and cultural significance are required.'
         elif not region_ids:
             error = 'Select at least one country.'
         else:
             ingredient = Ingredient.objects.create(
                 author=request.user, name=name, description=description,
-                cultural_significance=(request.POST.get('cultural_significance') or '').strip(),
+                cultural_significance=cultural_significance,
             )
             ingredient.regions.set(region_ids)
             return redirect('/ingredients/')

@@ -17,8 +17,8 @@
                 <textarea name="description" rows="6" placeholder="Describe the technique, when to use it, and tips..." required></textarea>
             </div>
             <div class="form-group">
-                <label>Cultural Significance <span style="font-weight:400;color:#888;">(optional)</span></label>
-                <textarea name="cultural_significance" rows="4" placeholder="Origin, traditions, cultural role of this technique..."></textarea>
+                <label>Cultural Significance</label>
+                <textarea name="cultural_significance" rows="4" placeholder="Origin, traditions, cultural role of this technique..." required></textarea>
             </div>
             {% include "includes/tag_input.html" with prefix="country" field="region_ids" label="Countries *" items=regions placeholder="Type a country…" required=True %}
             <button type="submit" class="form-submit">Publish Technique</button>
