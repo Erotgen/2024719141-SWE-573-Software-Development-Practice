@@ -1,0 +1,101 @@
+{# params: comments, comment_kind, comment_target_pk #}
+<style>
+.cmt-section { margin-top:24px; }
+.cmt-form textarea {
+    width:100%; padding:11px 14px; font-size:.92rem; border:1.5px solid #ddd;
+    border-radius:6px; outline:none; background:#fafafa; font-family:inherit;
+    resize:vertical; min-height:70px; transition:border-color .2s;
+}
+.cmt-form textarea:focus { border-color:#c0392b; background:#fff; }
+.cmt-form .cmt-submit-row { display:flex; justify-content:flex-end; margin-top:8px; }
+.cmt-submit {
+    background:#c0392b; color:#fff; border:none; padding:9px 18px; border-radius:6px;
+    font-weight:700; cursor:pointer; font-size:.85rem; transition:background .2s;
+}
+.cmt-submit:hover { background:#a93226; }
+.cmt-list { margin-top:18px; }
+.cmt-item {
+    background:#fafafa; border:1px solid #eee; border-radius:8px;
+    padding:14px 16px; margin-bottom:12px;
+}
+.cmt-item .cmt-item { background:#fff; }
+.cmt-meta {
+    display:flex; align-items:center; gap:10px; font-size:.78rem;
+    color:#888; margin-bottom:6px;
+}
+.cmt-meta strong { color:#1a1a1a; font-size:.88rem; font-weight:700; }
+.cmt-body { font-size:.92rem; color:#333; line-height:1.55; white-space:pre-wrap; }
+.cmt-actions { display:flex; gap:8px; margin-top:8px; align-items:center; flex-wrap:wrap; }
+.cmt-act-btn {
+    background:transparent; border:1px solid #ddd; color:#555; padding:4px 10px;
+    border-radius:14px; font-size:.78rem; cursor:pointer;
+    display:inline-flex; align-items:center; gap:5px; font-family:inherit;
+    transition:all .15s;
+}
+.cmt-act-btn:hover { border-color:#c0392b; color:#c0392b; }
+.cmt-act-btn.active-like { background:#fdecea; border-color:#c0392b; color:#c0392b; }
+.cmt-act-btn.active-dislike { background:#eef1f4; border-color:#5a6470; color:#5a6470; }
+.cmt-act-btn-form { display:inline; margin:0; padding:0; }
+.cmt-replies { margin-top:10px; padding-left:18px; border-left:2px solid #eee; }
+.cmt-reply-form { display:none; margin-top:10px; }
+.cmt-reply-form.open { display:block; }
+.cmt-empty { font-size:.88rem; color:#888; padding:14px 0; font-style:italic; }
+</style>
+
+<div class="cmt-section" id="comments">
+    <h3 class="section-title">Comments</h3>
+
+    <form method="post" action="/comments/{{ comment_kind }}/{{ comment_target_pk }}/add/" class="cmt-form">
+        <textarea name="body" placeholder="Write a comment..." required></textarea>
+        <div class="cmt-submit-row"><button type="submit" class="cmt-submit">Post Comment</button></div>
+    </form>
+
+    <div class="cmt-list">
+    {% for c in comments %}
+        <div class="cmt-item">
+            <div class="cmt-meta">
+                <strong>{{ c.author.first_name }} {{ c.author.last_name }}</strong>
+                <span>{{ c.created_at|date:"M j, Y, g:i a" }}</span>
+            </div>
+            <div class="cmt-body">{{ c.body }}</div>
+            <div class="cmt-actions">
+                <form method="post" action="/comments/{{ c.pk }}/like/" class="cmt-act-btn-form">
+                    <button type="submit" class="cmt-act-btn{% if user in c.liked_by.all %} active-like{% endif %}">&#10084; {{ c.liked_by.count }}</button>
+                </form>
+                <form method="post" action="/comments/{{ c.pk }}/dislike/" class="cmt-act-btn-form">
+                    <button type="submit" class="cmt-act-btn{% if user in c.disliked_by.all %} active-dislike{% endif %}">&#128078; {{ c.disliked_by.count }}</button>
+                </form>
+                <button type="button" class="cmt-act-btn" onclick="this.parentElement.nextElementSibling.classList.toggle('open')">&#8617; Reply</button>
+            </div>
+            <form method="post" action="/comments/{{ comment_kind }}/{{ comment_target_pk }}/add/" class="cmt-form cmt-reply-form">
+                <input type="hidden" name="parent_id" value="{{ c.pk }}">
+                <textarea name="body" placeholder="Write a reply..." rows="2" required></textarea>
+                <div class="cmt-submit-row"><button type="submit" class="cmt-submit">Post Reply</button></div>
+            </form>
+            {% if c.replies.all %}
+            <div class="cmt-replies">
+                {% for r in c.replies.all %}
+                <div class="cmt-item">
+                    <div class="cmt-meta">
+                        <strong>{{ r.author.first_name }} {{ r.author.last_name }}</strong>
+                        <span>{{ r.created_at|date:"M j, Y, g:i a" }}</span>
+                    </div>
+                    <div class="cmt-body">{{ r.body }}</div>
+                    <div class="cmt-actions">
+                        <form method="post" action="/comments/{{ r.pk }}/like/" class="cmt-act-btn-form">
+                            <button type="submit" class="cmt-act-btn{% if user in r.liked_by.all %} active-like{% endif %}">&#10084; {{ r.liked_by.count }}</button>
+                        </form>
+                        <form method="post" action="/comments/{{ r.pk }}/dislike/" class="cmt-act-btn-form">
+                            <button type="submit" class="cmt-act-btn{% if user in r.disliked_by.all %} active-dislike{% endif %}">&#128078; {{ r.disliked_by.count }}</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p class="cmt-empty">No comments yet. Be the first to share your thoughts.</p>
+    {% endfor %}
+    </div>
+</div>

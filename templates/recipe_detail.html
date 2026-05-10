@@ -2,6 +2,12 @@
 {% block title %}{{ recipe.title }}{% endblock %}
 
 {% block content %}
+{% if recipe.latitude is not None and recipe.longitude is not None %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endif %}
 <div class="content-wrap" style="flex-direction:column;max-width:860px;">
     <p style="font-size:.85rem;margin-bottom:12px;"><a href="/recipes/" style="color:#c0392b;font-weight:600;">&larr; Back to recipes</a></p>
 
@@ -9,12 +15,36 @@
     <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" style="width:100%;max-height:380px;object-fit:cover;border-radius:8px;margin-bottom:20px;">
     {% endif %}
 
-    <h1 style="font-size:2rem;font-weight:800;color:#1a1a1a;margin-bottom:8px;">{{ recipe.title }}</h1>
-    <div style="display:flex;flex-wrap:wrap;gap:16px;color:#666;font-size:.88rem;margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <h1 style="font-size:2rem;font-weight:800;color:#1a1a1a;margin-bottom:8px;">{{ recipe.title }}</h1>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/recipes/{{ recipe.pk }}/edit/" class="nav-btn" style="background:transparent;border:1.5px solid #1a1a1a;color:#1a1a1a;font-size:.78rem;padding:6px 14px;">{% if recipe.author == user %}Edit{% else %}Suggest edits{% endif %}</a>
+            {% if recipe.author != user %}<a href="/reports/recipe/{{ recipe.pk }}/submit/" class="nav-btn" style="background:transparent;border:1.5px solid #c0392b;color:#c0392b;font-size:.78rem;padding:6px 14px;">Report</a>{% endif %}
+        </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;color:#666;font-size:.88rem;margin-bottom:18px;align-items:center;">
         <span>by <strong>{{ recipe.author.first_name }} {{ recipe.author.last_name }}</strong></span>
         <span>&#128337; {{ recipe.cook_time }} min</span>
         <span>{{ recipe.difficulty }}</span>
+        <form method="post" action="/recipes/{{ recipe.pk }}/like/" style="margin-left:auto;">
+            <button type="submit" class="like-btn {% if is_liked %}liked{% endif %}" aria-label="{% if is_liked %}Unlike{% else %}Like{% endif %} this recipe">
+                <span class="like-heart">{% if is_liked %}&#10084;{% else %}&#9825;{% endif %}</span>
+                <span class="like-count">{{ like_count }}</span>
+            </button>
+        </form>
     </div>
+    <style>
+    .like-btn {
+        display:inline-flex; align-items:center; gap:8px; background:#fff;
+        border:1.5px solid #e0e0e0; color:#666; padding:8px 16px;
+        border-radius:24px; font-size:.9rem; font-weight:600; cursor:pointer;
+        transition:all .15s; font-family:inherit;
+    }
+    .like-btn:hover { border-color:#c0392b; color:#c0392b; }
+    .like-btn .like-heart { font-size:1.05rem; line-height:1; }
+    .like-btn.liked { background:#fdecea; border-color:#c0392b; color:#c0392b; }
+    .like-btn.liked .like-heart { color:#c0392b; }
+    </style>
 
     <div style="margin-bottom:22px;">
         {% for r in recipe.regions.all %}<span style="display:inline-block;background:#c0392b;color:#fff;font-size:.72rem;padding:3px 10px;border-radius:3px;font-weight:600;margin-right:4px;">{{ r.name }}</span>{% endfor %}
@@ -45,5 +75,27 @@
         {% endfor %}
     </div>
     {% endif %}
+
+    {% if recipe.latitude is not None and recipe.longitude is not None %}
+    <h3 class="section-title">Origin Location</h3>
+    <div id="recipeDetailMap" style="height:320px;border-radius:8px;border:1.5px solid #ddd;margin-bottom:28px;"
+         data-lat="{{ recipe.latitude }}" data-lng="{{ recipe.longitude }}"></div>
+    <script>
+    (function() {
+        var el = document.getElementById('recipeDetailMap');
+        var lat = parseFloat(el.dataset.lat);
+        var lng = parseFloat(el.dataset.lng);
+        var map = L.map(el).setView([lat, lng], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18,
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map);
+        setTimeout(function() { map.invalidateSize(); }, 100);
+    })();
+    </script>
+    {% endif %}
+
+    {% include "includes/comments.html" %}
 </div>
 {% endblock %}

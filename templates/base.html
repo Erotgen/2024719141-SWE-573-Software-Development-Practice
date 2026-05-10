@@ -143,6 +143,53 @@ a { text-decoration:none; color:inherit; }
 .dash-actions { display:flex; gap:12px; margin:20px 0 0 0; flex-wrap:wrap; }
 .dash-actions .nav-btn { font-size:.85rem; padding:9px 22px; }
 
+/* ── Search ── */
+.search-wrap { position:relative; display:flex; align-items:center; }
+.search-toggle {
+    background:transparent; border:none; cursor:pointer; padding:6px;
+    color:#fff; display:flex; align-items:center; transition:color .2s;
+}
+.search-toggle:hover { color:#c0392b; }
+.search-toggle svg { width:20px; height:20px; }
+.search-panel {
+    display:none; position:absolute; top:calc(100% + 14px); right:0;
+    background:#fff; border-radius:8px; box-shadow:0 8px 28px rgba(0,0,0,.25);
+    padding:18px; width:300px; z-index:200;
+}
+.search-panel.open { display:block; }
+.search-panel h4 {
+    font-size:.78rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#1a1a1a; margin-bottom:10px;
+}
+.search-panel form { display:flex; gap:6px; margin-bottom:14px; }
+.search-panel input {
+    flex:1; padding:9px 12px; font-size:.9rem; border:1.5px solid #ddd;
+    border-radius:5px; outline:none; background:#fafafa; font-family:inherit;
+    color:#333;
+}
+.search-panel input:focus { border-color:#c0392b; background:#fff; }
+.search-panel button[type=submit] {
+    background:#c0392b; color:#fff; border:none; border-radius:5px;
+    padding:0 14px; font-weight:700; cursor:pointer; transition:background .2s;
+}
+.search-panel button[type=submit]:hover { background:#a93226; }
+
+/* ── Search results page ── */
+.search-page-form { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.search-page-form input[type=search] {
+    flex:1; min-width:220px; padding:11px 14px; font-size:.95rem;
+    border:1.5px solid #ddd; border-radius:6px; outline:none; background:#fafafa;
+    font-family:inherit;
+}
+.search-page-form input[type=search]:focus { border-color:#c0392b; background:#fff; }
+.search-list { list-style:none; padding:0; margin:0; }
+.search-list li {
+    padding:12px 14px; border-bottom:1px solid #eee; font-size:.9rem; color:#444;
+}
+.search-list li:hover { background:#f9f5ef; }
+.search-list li a { display:block; color:#333; }
+.search-list li strong { color:#c0392b; }
+
 /* ── Hamburger ── */
 .hamburger { display:none; background:none; border:none; cursor:pointer; padding:4px; }
 .hamburger span { display:block; width:22px; height:2px; background:#fff; margin:5px 0; transition:all .3s; }
@@ -185,10 +232,27 @@ a { text-decoration:none; color:inherit; }
         <a href="/ingredients/">Ingredients</a>
         <a href="/techniques/">Techniques</a>
         <a href="/culinary-road/">Culinary Road</a>
-        <a href="/culinary-data/">Culinary Data</a>
+        <a href="/culinary-compare/">Culinary Compare</a>
+        <a href="/proposals/">Proposals</a>
+        {% if user.is_staff %}<a href="/reports/" style="color:#c0392b;">Reports</a>{% endif %}
         <a href="/profile/">My Profile</a>
         <span class="nav-user">Welcome, <strong>{{ user.first_name }}</strong></span>
         <a href="/logout/" class="nav-btn">Logout</a>
+        <div class="search-wrap" id="searchWrap">
+            <button type="button" class="search-toggle" aria-label="Search" onclick="toggleSearchPanel(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+            <div class="search-panel" id="searchPanel">
+                <h4>Search</h4>
+                <form method="get" action="/search/">
+                    <input type="search" name="q" placeholder="Search keywords…" autocomplete="off">
+                    <button type="submit">Go</button>
+                </form>
+            </div>
+        </div>
     {% else %}
         <a href="/login/" class="nav-btn">Log In</a>
         <a href="/register/" class="nav-btn" style="background:#c0392b;border-color:#c0392b;">Join</a>
@@ -204,6 +268,31 @@ a { text-decoration:none; color:inherit; }
 <footer class="footer">
     &copy; 2026 CulinaryGraph. All Rights Reserved. Built with Django.
 </footer>
+
+<script>
+function toggleSearchPanel(e) {
+    e.stopPropagation();
+    var panel = document.getElementById('searchPanel');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+        var input = panel.querySelector('input[name=q]');
+        if (input) input.focus();
+    }
+}
+document.addEventListener('click', function(e) {
+    var wrap = document.getElementById('searchWrap');
+    var panel = document.getElementById('searchPanel');
+    if (wrap && panel && !wrap.contains(e.target)) {
+        panel.classList.remove('open');
+    }
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        var panel = document.getElementById('searchPanel');
+        if (panel) panel.classList.remove('open');
+    }
+});
+</script>
 
 </body>
 </html>

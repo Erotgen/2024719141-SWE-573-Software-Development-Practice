@@ -2,25 +2,76 @@
 {% block title %}Add Recipe{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+.cs-section {
+    border:1.5px solid #e6d5c7; background:#faf5ef; border-left:4px solid #c0392b;
+    border-radius:6px; padding:18px 20px 6px; margin:0 0 18px;
+}
+.cs-legend {
+    font-size:.9rem; font-weight:700; text-transform:uppercase; letter-spacing:1.2px;
+    color:#c0392b; padding:0 8px;
+}
+.cs-intro { font-size:.8rem; color:#777; margin:-4px 0 14px; }
+.cs-sub label { color:#6b3a1f; font-size:.78rem; }
+.cs-sub textarea { background:#fff; }
+
+.ing-section {
+    border:1.5px solid #d8e2d4; background:#f6faf3; border-left:4px solid #5a8a3a;
+    border-radius:6px; padding:18px 20px; margin:0 0 18px;
+}
+.ing-legend {
+    font-size:.9rem; font-weight:700; text-transform:uppercase; letter-spacing:1.2px;
+    color:#3e6027; padding:0 8px;
+}
+.ing-intro { font-size:.8rem; color:#777; margin:-2px 0 12px; }
+.ing-empty { font-size:.82rem; color:#888; font-style:italic; padding:8px 0 4px; }
+.ing-row {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px;
+    background:#fff; border:1px solid #d8e2d4; border-radius:6px; padding:10px;
+}
+.ing-row select, .ing-row input {
+    width:100%; padding:11px 14px; font-size:.92rem; border:1.5px solid #ddd;
+    border-radius:6px; outline:none; background:#fafafa; font-family:inherit;
+    transition:border-color .2s;
+}
+.ing-row select:focus, .ing-row input:focus { border-color:#5a8a3a; background:#fff; }
+.ing-row .ing-select { flex:1 1 100%; min-width:0; }
+.ing-row .ing-qty    { flex:1 1 0; min-width:80px; }
+.ing-row .ing-unit   { flex:2 1 0; min-width:110px; cursor:pointer; }
+.ing-remove-btn {
+    background:transparent; border:none; color:#c0392b; cursor:pointer;
+    font-size:1.4rem; line-height:1; padding:0 8px; font-weight:700; flex-shrink:0;
+}
+.ing-remove-btn:hover { color:#7a1f15; }
+.ing-add-btn {
+    display:inline-flex; align-items:center; gap:6px; background:#5a8a3a; color:#fff;
+    border:none; border-radius:6px; padding:11px 18px; font-size:.92rem; font-weight:700;
+    cursor:pointer; letter-spacing:.4px; margin-top:6px; transition:background .2s;
+}
+.ing-add-btn:hover { background:#3e6027; }
+</style>
 <div class="form-page">
-    <div class="form-card" style="width:480px;">
+    <div class="form-card" style="width:520px;">
         <h2>Add a Recipe</h2>
-        <p class="subtitle">Share your recipe with one or more countries</p>
+        <p class="subtitle">Share your recipe from your country</p>
         {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-        <form method="post" action="/recipes/add/" enctype="multipart/form-data">
+        <form method="post" action="/recipes/add/" enctype="multipart/form-data" id="recipeForm">
             <div class="form-group">
                 <label>Recipe Title</label>
                 <input type="text" name="title" placeholder="Lentil Soup" required>
             </div>
-            <div class="form-group">
-                <label>Instructions</label>
-                <textarea name="content" placeholder="List ingredients, then describe the steps..." rows="6"
-                    required></textarea>
-            </div>
-            <div class="form-group">
-                <label>Cultural Significance</label>
-                <textarea name="cultural_significance" rows="4" placeholder="History, traditions, occasions this dish is tied to..." required></textarea>
-            </div>
+            <fieldset class="ing-section">
+                <legend class="ing-legend">Ingredients</legend>
+                <p class="ing-intro">Add each ingredient with its quantity and unit of measurement.</p>
+                <div id="ingredientList"></div>
+                <p class="ing-empty" id="ingredientEmpty">No ingredients yet. Click "Add Ingredient" to begin.</p>
+                <button type="button" class="ing-add-btn" id="addIngredientBtn">+ Add Ingredient</button>
+            </fieldset>
+            {% include "includes/tag_input.html" with prefix="technique" field="technique_ids" label="Techniques" items=all_techniques placeholder="Type a technique…" required=False %}
             <div style="display:flex;gap:12px;">
                 <div class="form-group" style="flex:1;">
                     <label>Cook Time (min)</label>
@@ -35,16 +86,144 @@
                     </select>
                 </div>
             </div>
-            {% include "includes/tag_input.html" with prefix="country" field="region_ids" label="Countries *" items=regions placeholder="Type a country…" required=True %}
-            {% include "includes/tag_input.html" with prefix="ingredient" field="ingredient_ids" label="Ingredients" items=all_ingredients placeholder="Type an ingredient…" required=False %}
-            {% include "includes/tag_input.html" with prefix="technique" field="technique_ids" label="Techniques" items=all_techniques placeholder="Type a technique…" required=False %}
+            <div class="form-group">
+                <label>Instructions</label>
+                <textarea name="content" placeholder="List ingredients, then describe the steps..." rows="6"
+                    required></textarea>
+            </div>
+            <fieldset class="cs-section">
+                <legend class="cs-legend">Cultural Significance</legend>
+                <p class="cs-intro">Tell the story behind this dish across three lenses.</p>
+                <div class="form-group cs-sub">
+                    <label>Historical Roots</label>
+                    <textarea id="historicalRoots" rows="3" placeholder="Where and when did this dish originate? How has it evolved?" required></textarea>
+                </div>
+                <div class="form-group cs-sub">
+                    <label>Cultural Significance</label>
+                    <textarea id="culturalSignificanceText" rows="3" placeholder="What does this dish mean to its culture? Festivals, rituals, regional pride..." required></textarea>
+                </div>
+                <div class="form-group cs-sub">
+                    <label>Personal Significance</label>
+                    <textarea id="personalSignificance" rows="3" placeholder="Why does this dish matter to you? Family memories, traditions you keep..." required></textarea>
+                </div>
+                <input type="hidden" name="cultural_significance" id="culturalSignificanceCombined">
+            </fieldset>
             <div class="form-group">
                 <label>Photo <span style="font-weight:400;color:#888;">(optional)</span></label>
                 <input type="file" name="image" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>Location *</label>
+                <p style="font-size:.78rem;color:#888;margin-bottom:6px;">Click on the map to mark where this recipe comes from.</p>
+                <div id="recipeMap" style="height:320px;border-radius:6px;border:1.5px solid #ddd;"></div>
+                <p id="coordReadout" style="font-size:.78rem;color:#666;margin-top:6px;">No location selected.</p>
+                <input type="hidden" name="latitude" id="latitudeInput">
+                <input type="hidden" name="longitude" id="longitudeInput">
             </div>
             <button type="submit" class="form-submit">Publish Recipe</button>
         </form>
         <p class="form-footer"><a href="/entry/">&larr; Back to dashboard</a></p>
     </div>
 </div>
+<script>
+(function() {
+    var map = L.map('recipeMap').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18,
+    }).addTo(map);
+    var marker = null;
+    var latInput = document.getElementById('latitudeInput');
+    var lngInput = document.getElementById('longitudeInput');
+    var readout = document.getElementById('coordReadout');
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng, {draggable:true}).addTo(map);
+            marker.on('dragend', function() {
+                var p = marker.getLatLng();
+                latInput.value = p.lat.toFixed(6);
+                lngInput.value = p.lng.toFixed(6);
+                readout.textContent = 'Selected: ' + p.lat.toFixed(4) + ', ' + p.lng.toFixed(4);
+            });
+        }
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+        readout.textContent = 'Selected: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+    });
+    setTimeout(function() { map.invalidateSize(); }, 100);
+})();
+(function() {
+    var form = document.getElementById('recipeForm');
+    if (!form) return;
+    form.addEventListener('submit', function() {
+        var hr = (document.getElementById('historicalRoots').value || '').trim();
+        var cs = (document.getElementById('culturalSignificanceText').value || '').trim();
+        var ps = (document.getElementById('personalSignificance').value || '').trim();
+        document.getElementById('culturalSignificanceCombined').value =
+            'Historical Roots:\n' + hr +
+            '\n\nCultural Significance:\n' + cs +
+            '\n\nPersonal Significance:\n' + ps;
+    });
+})();
+(function() {
+    var INGREDIENTS = [{% for ing in all_ingredients %}{id:{{ ing.pk }},name:"{{ ing.name|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}];
+    var UNITS = ['g','kg','ml','l','tsp','tbsp','cup','oz','lb','piece','clove','slice','pinch','to taste'];
+    var list = document.getElementById('ingredientList');
+    var empty = document.getElementById('ingredientEmpty');
+    var addBtn = document.getElementById('addIngredientBtn');
+    if (!list || !addBtn) return;
+
+    function refreshEmpty() {
+        empty.style.display = list.children.length ? 'none' : 'block';
+    }
+    function addRow() {
+        var row = document.createElement('div');
+        row.className = 'ing-row';
+
+        var sel = document.createElement('select');
+        sel.name = 'ingredient_ids';
+        sel.className = 'ing-select';
+        sel.required = true;
+        var opt0 = document.createElement('option');
+        opt0.value = ''; opt0.textContent = 'Select ingredient…';
+        sel.appendChild(opt0);
+        INGREDIENTS.forEach(function(it){
+            var o = document.createElement('option');
+            o.value = it.id; o.textContent = it.name;
+            sel.appendChild(o);
+        });
+
+        var unit = document.createElement('select');
+        unit.name = 'ingredient_units';
+        unit.className = 'ing-unit';
+        UNITS.forEach(function(u){
+            var o = document.createElement('option');
+            o.value = u; o.textContent = u;
+            unit.appendChild(o);
+        });
+
+        var qty = document.createElement('input');
+        qty.type = 'number'; qty.name = 'ingredient_quantities';
+        qty.className = 'ing-qty'; qty.step = '0.01'; qty.min = '0';
+        qty.placeholder = 'Qty'; qty.required = true;
+
+        var rm = document.createElement('button');
+        rm.type = 'button'; rm.className = 'ing-remove-btn';
+        rm.setAttribute('aria-label', 'Remove ingredient');
+        rm.textContent = '×';
+        rm.addEventListener('click', function(){ row.remove(); refreshEmpty(); });
+
+        row.appendChild(sel); row.appendChild(qty); row.appendChild(unit); row.appendChild(rm);
+        list.appendChild(row);
+        refreshEmpty();
+        sel.focus();
+    }
+    addBtn.addEventListener('click', addRow);
+    refreshEmpty();
+})();
+</script>
 {% endblock %}

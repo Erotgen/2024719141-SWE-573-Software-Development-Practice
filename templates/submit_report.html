@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Report {{ kind|title }}{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card" style="width:480px;">
+        <h2>Report this {{ kind }}</h2>
+        <p class="subtitle">
+            {% if kind == 'recipe' %}{{ target.title }}
+            {% else %}{{ target.name }}{% endif %}
+        </p>
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+        <form method="post" action="/reports/{{ kind }}/{{ target.pk }}/submit/">
+            <div class="form-group">
+                <label>Reason</label>
+                <textarea name="reason" rows="6" placeholder="Why are you reporting this entry? Be specific so admins can review." required></textarea>
+            </div>
+            <button type="submit" class="form-submit">Submit Report</button>
+        </form>
+        <p class="form-footer"><a href="/{{ kind }}s/{{ target.pk }}/">&larr; Back</a></p>
+    </div>
+</div>
+{% endblock %}

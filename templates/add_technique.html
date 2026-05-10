@@ -5,7 +5,7 @@
 <div class="form-page">
     <div class="form-card" style="width:480px;">
         <h2>Add a Technique</h2>
-        <p class="subtitle">Share a technique with one or more countries</p>
+        <p class="subtitle">Share a technique from your country</p>
         {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
         <form method="post" action="/techniques/add/">
             <div class="form-group">
@@ -20,7 +20,10 @@
                 <label>Cultural Significance</label>
                 <textarea name="cultural_significance" rows="4" placeholder="Origin, traditions, cultural role of this technique..." required></textarea>
             </div>
-            {% include "includes/tag_input.html" with prefix="country" field="region_ids" label="Countries *" items=regions placeholder="Type a country…" required=True %}
+            <div class="form-group">
+                <label>Necessary Tools <span style="font-weight:400;color:#888;">(optional)</span></label>
+                <textarea name="necessary_tools" rows="3" placeholder="e.g. immersion circulator, vacuum sealer, heavy cast-iron pan..."></textarea>
+            </div>
             <button type="submit" class="form-submit">Publish Technique</button>
         </form>
         <p class="form-footer"><a href="/entry/">&larr; Back to dashboard</a></p>

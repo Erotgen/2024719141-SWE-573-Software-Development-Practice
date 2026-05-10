@@ -5,7 +5,13 @@
 <div class="content-wrap" style="flex-direction:column;max-width:760px;">
     <p style="font-size:.85rem;margin-bottom:12px;"><a href="/techniques/" style="color:#c0392b;font-weight:600;">&larr; Back to techniques</a></p>
 
-    <h1 style="font-size:2rem;font-weight:800;color:#1a1a1a;margin-bottom:8px;">{{ technique.name }}</h1>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <h1 style="font-size:2rem;font-weight:800;color:#1a1a1a;margin-bottom:8px;">{{ technique.name }}</h1>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/techniques/{{ technique.pk }}/edit/" class="nav-btn" style="background:transparent;border:1.5px solid #1a1a1a;color:#1a1a1a;font-size:.78rem;padding:6px 14px;">{% if technique.author == user %}Edit{% else %}Suggest edits{% endif %}</a>
+            {% if technique.author != user %}<a href="/reports/technique/{{ technique.pk }}/submit/" class="nav-btn" style="background:transparent;border:1.5px solid #c0392b;color:#c0392b;font-size:.78rem;padding:6px 14px;">Report</a>{% endif %}
+        </div>
+    </div>
     <p style="color:#666;font-size:.88rem;margin-bottom:16px;">by <strong>{{ technique.author.first_name }} {{ technique.author.last_name }}</strong></p>
 
     <div style="margin-bottom:22px;">
@@ -19,5 +25,12 @@
     <h3 class="section-title">Cultural Significance</h3>
     <p style="white-space:pre-wrap;line-height:1.7;color:#333;margin-bottom:28px;">{{ technique.cultural_significance }}</p>
     {% endif %}
+
+    {% if technique.necessary_tools %}
+    <h3 class="section-title">Necessary Tools</h3>
+    <p style="white-space:pre-wrap;line-height:1.7;color:#333;margin-bottom:28px;">{{ technique.necessary_tools }}</p>
+    {% endif %}
+
+    {% include "includes/comments.html" %}
 </div>
 {% endblock %}

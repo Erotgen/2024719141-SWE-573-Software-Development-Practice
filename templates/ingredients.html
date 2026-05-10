@@ -2,6 +2,10 @@
 {% block title %}Ingredients{% endblock %}
 
 {% block content %}
+{% include "includes/adv_search.html" %}
+<datalist id="ingredient-options">
+    {% for n in all_ingredient_names %}<option value="{{ n }}">{% endfor %}
+</datalist>
 <div class="dash-header">
     <h1>Ingredients</h1>
     <p>Discover ingredients from around the world.</p>
@@ -10,6 +14,32 @@
     </div>
 </div>
 <div class="content-wrap" style="flex-direction:column;">
+    <div class="adv-search{% if any_filter %} open{% endif %}">
+        <div class="adv-search-head" onclick="toggleAdvSearch(this)">
+            <h3>Advanced Search {% if any_filter %}<span class="count">· filters active</span>{% endif %}</h3>
+            <span class="chev">▾</span>
+        </div>
+        <div class="adv-search-body">
+            <form method="get" action="/ingredients/">
+                <div class="adv-grid">
+                    <div>
+                        <label>Name</label>
+                        <input type="text" name="name" value="{{ filters.name }}" placeholder="e.g. saffron" list="ingredient-options" autocomplete="off">
+                        {% if name_corrected %}<small style="display:block;margin-top:4px;font-size:.74rem;color:#c0392b;">Did you mean <strong>{{ name_corrected }}</strong>? Showing results for that.</small>{% endif %}
+                    </div>
+                    <div><label>Author</label><input type="text" name="author" value="{{ filters.author }}" placeholder="Name or email"></div>
+                    <div><label>Description contains</label><input type="text" name="description" value="{{ filters.description }}" placeholder="Keyword"></div>
+                    <div><label>Cultural significance</label><input type="text" name="cultural" value="{{ filters.cultural }}" placeholder="Keyword"></div>
+                </div>
+                <div class="adv-actions">
+                    <button type="submit">Search</button>
+                    {% if any_filter %}<a class="adv-clear" href="/ingredients/">Clear filters</a>{% endif %}
+                    <span class="adv-status">{{ ingredients|length }} result{{ ingredients|length|pluralize }}</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <h3 class="section-title">All Ingredients</h3>
     <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;justify-content:flex-start;">
         {% for i in ingredients %}
@@ -18,12 +48,11 @@
             {% if i.description %}
             <p style="font-size:.85rem;color:#555;line-height:1.5;">{{ i.description|truncatechars:160 }}</p>
             {% endif %}
-            <div style="margin-top:10px;">{% for r in i.regions.all %}<span style="display:inline-block;background:#c0392b;color:#fff;font-size:.7rem;padding:3px 10px;border-radius:3px;font-weight:600;margin-right:4px;margin-bottom:4px;">{{ r.name }}</span>{% endfor %}</div>
-            <p style="font-size:.72rem;color:#888;margin-top:6px;">by {{ i.author.first_name }} {{ i.author.last_name }}</p>
+            <p style="font-size:.72rem;color:#888;margin-top:10px;">by {{ i.author.first_name }} {{ i.author.last_name }}</p>
         </a>
         {% empty %}
         <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">
-            No ingredients yet. Be the first to add one!
+            {% if any_filter %}No ingredients match your filters.{% else %}No ingredients yet. Be the first to add one!{% endif %}
         </div>
         {% endfor %}
     </div>

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ kind|title }}{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card" style="width:520px;">
+        {% if is_owner %}
+            <h2>Edit {{ kind|title }}</h2>
+            <p class="subtitle">Update your {{ kind }}. Changes save immediately.</p>
+        {% else %}
+            <h2>Suggest Edits</h2>
+            <p class="subtitle">Your changes will be sent to the author for approval.</p>
+        {% endif %}
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+        <form method="post" action="/{{ kind }}s/{{ target.pk }}/edit/">
+            {% for f in fields %}
+                <div class="form-group">
+                    <label>{{ f.label }}{% if f.optional %} <span style="font-weight:400;color:#888;">(optional)</span>{% endif %}</label>
+                    {% if f.name == 'difficulty' %}
+                        <select name="{{ f.name }}">
+                            {% for d in difficulty_choices %}
+                                <option value="{{ d }}"{% if f.value == d %} selected{% endif %}>{{ d }}</option>
+                            {% endfor %}
+                        </select>
+                    {% elif f.name == 'cook_time' %}
+                        <input type="number" name="{{ f.name }}" value="{{ f.value }}" min="1" required>
+                    {% elif f.name == 'title' or f.name == 'name' %}
+                        <input type="text" name="{{ f.name }}" value="{{ f.value }}" required>
+                    {% else %}
+                        <textarea name="{{ f.name }}" rows="5"{% if not f.optional %} required{% endif %}>{{ f.value }}</textarea>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% if not is_owner %}
+                <div class="form-group">
+                    <label>Note to the author <span style="font-weight:400;color:#888;">(optional)</span></label>
+                    <textarea name="note" rows="2" placeholder="Why are you proposing this edit?"></textarea>
+                </div>
+            {% endif %}
+            <button type="submit" class="form-submit">
+                {% if is_owner %}Save changes{% else %}Submit for approval{% endif %}
+            </button>
+        </form>
+        <p class="form-footer"><a href="/{{ kind }}s/{{ target.pk }}/">&larr; Back</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -2,19 +2,75 @@
 {% block title %}Culinary Road{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <div class="dash-header">
     <h1>Culinary Road</h1>
-    <p>Explore the world's flavors, one region at a time.</p>
+    <p>Explore the world's flavors, one region at a time. Click any marker to discover the recipe.</p>
 </div>
-<div class="content-wrap" style="flex-direction:column;">
-    <div style="position:relative;width:100%;max-width:900px;margin:0 auto;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/1200px-World_map_-_low_resolution.svg.png"
-             alt="World Map" style="width:100%;display:block;border-radius:8px;opacity:.85;">
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-            <span style="background:rgba(192,57,43,.92);color:#fff;padding:14px 34px;font-size:1.6rem;
-                         font-weight:800;letter-spacing:2px;text-transform:uppercase;border-radius:6px;
-                         box-shadow:0 4px 18px rgba(0,0,0,.3);">Under Construction</span>
-        </div>
-    </div>
+<div class="content-wrap" style="flex-direction:column;max-width:none;padding:25px 20px;">
+    <div id="culinaryRoadMap" style="height:1000px;width:2000px;
+        border-radius:10px;border:1.5px solid #ddd;box-shadow:0 4px 18px rgba(0,0,0,.08);"></div>
+    <p style="text-align:center;font-size:.85rem;color:#666;margin-top:14px;">
+        {{ points_count }} location{{ points_count|pluralize }} available — click a pin to view the recipe.
+    </p>
 </div>
+<script id="culinaryPoints" type="application/json">{{ points_json|safe }}</script>
+<style>
+.cr-popup { width:260px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.cr-popup img { width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px; display:block; }
+.cr-popup .cr-img-fallback { width:100%; height:90px; border-radius:6px; margin-bottom:8px;
+    background:linear-gradient(135deg,#c0392b,#e67e22); color:rgba(255,255,255,.85);
+    display:flex; align-items:center; justify-content:center; font-size:2rem; }
+.cr-popup h4 { font-size:1rem; font-weight:700; color:#1a1a1a; margin:0 0 6px; }
+.cr-popup .cr-heritage-label { font-size:.7rem; text-transform:uppercase; letter-spacing:1.2px; color:#c0392b; font-weight:700; margin-bottom:4px; }
+.cr-popup .cr-heritage { font-size:.82rem; color:#444; line-height:1.5; max-height:120px; overflow:auto; margin-bottom:8px; white-space:pre-wrap; }
+.cr-popup .cr-link { display:inline-block; color:#c0392b; font-weight:700; font-size:.82rem; }
+.cr-popup .cr-link:hover { text-decoration:underline; }
+.leaflet-popup-content { margin:12px 14px !important; }
+.leaflet-popup-content-wrapper { border-radius:10px !important; }
+</style>
+<script>
+    (function () {
+        var points = JSON.parse(document.getElementById('culinaryPoints').textContent || '[]');
+        var map = L.map('culinaryRoadMap').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18,
+        }).addTo(map);
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+        var bounds = [];
+        points.forEach(function (p) {
+            var marker = L.marker([p.lat, p.lng]).addTo(map);
+            var img = p.image_url
+                ? '<img src="' + esc(p.image_url) + '" alt="' + esc(p.title) + '">'
+                : '<div class="cr-img-fallback">&#127835;</div>';
+            var heritage = (p.cultural_significance || '').trim();
+            var heritageHtml = heritage
+                ? '<div class="cr-heritage-label">Cultural Heritage</div>' +
+                  '<div class="cr-heritage">' + esc(heritage) + '</div>'
+                : '';
+            marker.bindPopup(
+                '<div class="cr-popup">' +
+                    img +
+                    '<h4>' + esc(p.title) + '</h4>' +
+                    heritageHtml +
+                    '<a class="cr-link" href="/recipes/' + p.pk + '/">View full recipe &rarr;</a>' +
+                '</div>',
+                { maxWidth: 280, minWidth: 240 }
+            );
+            bounds.push([p.lat, p.lng]);
+        });
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 6 });
+        }
+        setTimeout(function () { map.invalidateSize(); }, 100);
+    })();
+</script>
 {% endblock %}

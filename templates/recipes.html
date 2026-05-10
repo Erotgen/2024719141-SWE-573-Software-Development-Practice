@@ -2,13 +2,70 @@
 {% block title %}Recipes{% endblock %}
 
 {% block content %}
+{% include "includes/adv_search.html" %}
+<datalist id="ingredient-options">
+    {% for n in all_ingredient_names %}<option value="{{ n }}">{% endfor %}
+</datalist>
+<datalist id="technique-options">
+    {% for n in all_technique_names %}<option value="{{ n }}">{% endfor %}
+</datalist>
 <div class="content-wrap" style="flex-direction:column;">
     <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:20px;">Browse Recipes</h2>
+
+    <div class="adv-search{% if any_filter %} open{% endif %}">
+        <div class="adv-search-head" onclick="toggleAdvSearch(this)">
+            <h3>Advanced Search {% if any_filter %}<span class="count">· filters active</span>{% endif %}</h3>
+            <span class="chev">▾</span>
+        </div>
+        <div class="adv-search-body">
+            <form method="get" action="/recipes/">
+                <div class="adv-grid">
+                    <div><label>Title</label><input type="text" name="title" value="{{ filters.title }}" placeholder="e.g. paella"></div>
+                    <div><label>Author</label><input type="text" name="author" value="{{ filters.author }}" placeholder="Name or email"></div>
+                    <div><label>Region</label><input type="text" name="region" value="{{ filters.region }}" placeholder="e.g. Spain"></div>
+                    <div>
+                        <label>Difficulty</label>
+                        <select name="difficulty">
+                            <option value="">Any</option>
+                            {% for d in difficulty_choices %}
+                                <option value="{{ d }}" {% if filters.difficulty == d %}selected{% endif %}>{{ d }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label>Cook Time (min)</label>
+                        <div class="adv-range">
+                            <input type="number" name="cook_min" value="{{ filters.cook_min }}" placeholder="Min" min="0">
+                            <input type="number" name="cook_max" value="{{ filters.cook_max }}" placeholder="Max" min="0">
+                        </div>
+                    </div>
+                    <div>
+                        <label>Ingredient</label>
+                        <input type="text" name="ingredient" value="{{ filters.ingredient }}" placeholder="e.g. saffron" list="ingredient-options" autocomplete="off">
+                        {% if ingredient_corrected %}<small style="display:block;margin-top:4px;font-size:.74rem;color:#c0392b;">Did you mean <strong>{{ ingredient_corrected }}</strong>? Showing results for that.</small>{% endif %}
+                    </div>
+                    <div>
+                        <label>Technique</label>
+                        <input type="text" name="technique" value="{{ filters.technique }}" placeholder="e.g. braising" list="technique-options" autocomplete="off">
+                        {% if technique_corrected %}<small style="display:block;margin-top:4px;font-size:.74rem;color:#c0392b;">Did you mean <strong>{{ technique_corrected }}</strong>? Showing results for that.</small>{% endif %}
+                    </div>
+                    <div><label>Instructions contain</label><input type="text" name="instructions" value="{{ filters.instructions }}" placeholder="Keyword"></div>
+                    <div><label>Cultural significance</label><input type="text" name="cultural" value="{{ filters.cultural }}" placeholder="Keyword"></div>
+                </div>
+                <div class="adv-actions">
+                    <button type="submit">Search</button>
+                    {% if any_filter %}<a class="adv-clear" href="/recipes/">Clear filters</a>{% endif %}
+                    <span class="adv-status">{{ recipes|length }} result{{ recipes|length|pluralize }}</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="recipe-grid">
         {% for recipe in recipes %}
             {% include "includes/recipe_card.html" with recipe=recipe %}
         {% empty %}
-            <p style="color:#888;padding:30px;text-align:center;">No recipes in this category yet.</p>
+            <p style="color:#888;padding:30px;text-align:center;">{% if any_filter %}No recipes match your filters.{% else %}No recipes in this category yet.{% endif %}</p>
         {% endfor %}
     </div>
 </div>

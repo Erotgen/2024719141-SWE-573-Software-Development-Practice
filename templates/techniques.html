@@ -2,6 +2,10 @@
 {% block title %}Techniques{% endblock %}
 
 {% block content %}
+{% include "includes/adv_search.html" %}
+<datalist id="technique-options">
+    {% for n in all_technique_names %}<option value="{{ n }}">{% endfor %}
+</datalist>
 <div class="dash-header">
     <h1>Cooking Techniques</h1>
     <p>Learn and share the methods that shape great food.</p>
@@ -10,6 +14,34 @@
     </div>
 </div>
 <div class="content-wrap" style="flex-direction:column;">
+    <div class="adv-search{% if any_filter %} open{% endif %}">
+        <div class="adv-search-head" onclick="toggleAdvSearch(this)">
+            <h3>Advanced Search {% if any_filter %}<span class="count">· filters active</span>{% endif %}</h3>
+            <span class="chev">▾</span>
+        </div>
+        <div class="adv-search-body">
+            <form method="get" action="/techniques/">
+                <div class="adv-grid">
+                    <div>
+                        <label>Name</label>
+                        <input type="text" name="name" value="{{ filters.name }}" placeholder="e.g. sous vide" list="technique-options" autocomplete="off">
+                        {% if name_corrected %}<small style="display:block;margin-top:4px;font-size:.74rem;color:#c0392b;">Did you mean <strong>{{ name_corrected }}</strong>? Showing results for that.</small>{% endif %}
+                    </div>
+                    <div><label>Author</label><input type="text" name="author" value="{{ filters.author }}" placeholder="Name or email"></div>
+                    <div><label>Region</label><input type="text" name="region" value="{{ filters.region }}" placeholder="e.g. France"></div>
+                    <div><label>Description contains</label><input type="text" name="description" value="{{ filters.description }}" placeholder="Keyword"></div>
+                    <div><label>Cultural significance</label><input type="text" name="cultural" value="{{ filters.cultural }}" placeholder="Keyword"></div>
+                    <div><label>Necessary tools</label><input type="text" name="tools" value="{{ filters.tools }}" placeholder="e.g. immersion circulator"></div>
+                </div>
+                <div class="adv-actions">
+                    <button type="submit">Search</button>
+                    {% if any_filter %}<a class="adv-clear" href="/techniques/">Clear filters</a>{% endif %}
+                    <span class="adv-status">{{ techniques|length }} result{{ techniques|length|pluralize }}</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <h3 class="section-title">All Techniques</h3>
     <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;justify-content:flex-start;">
         {% for t in techniques %}
@@ -21,7 +53,7 @@
         </a>
         {% empty %}
         <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">
-            No techniques yet. Be the first to add one!
+            {% if any_filter %}No techniques match your filters.{% else %}No techniques yet. Be the first to add one!{% endif %}
         </div>
         {% endfor %}
     </div>

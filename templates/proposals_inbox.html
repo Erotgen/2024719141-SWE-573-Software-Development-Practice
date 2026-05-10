@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Edit Proposals{% endblock %}
+
+{% block content %}
+<style>
+.prop-page { max-width:860px; margin:0 auto; padding:30px 24px; }
+.prop-section { margin-bottom:36px; }
+.prop-card {
+    background:#fff; border:1px solid #e5e5e5; border-radius:8px;
+    padding:18px 20px; margin-bottom:14px; box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.prop-head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.prop-head h4 { font-size:1rem; font-weight:700; color:#1a1a1a; }
+.prop-head h4 a { color:#c0392b; }
+.prop-meta { font-size:.8rem; color:#888; }
+.prop-note { font-size:.88rem; color:#444; background:#fafafa; border-left:3px solid #c0392b; padding:8px 12px; border-radius:0 6px 6px 0; margin:8px 0 12px; }
+.diff-table { width:100%; font-size:.88rem; border-collapse:collapse; margin-bottom:12px; }
+.diff-table th { text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:1px; color:#888; padding:6px 8px; border-bottom:1px solid #eee; }
+.diff-table td { padding:8px; vertical-align:top; border-bottom:1px solid #f1f1f1; white-space:pre-wrap; }
+.diff-table .field-name { width:140px; font-weight:600; color:#444; }
+.diff-table .old-val { color:#a13b3b; background:#fef5f5; }
+.diff-table .new-val { color:#2c7a3a; background:#f3faf3; }
+.prop-actions { display:flex; gap:10px; align-items:center; }
+.prop-actions textarea { flex:1; padding:8px 12px; font-size:.85rem; border:1.5px solid #ddd; border-radius:6px; outline:none; background:#fafafa; font-family:inherit; resize:vertical; min-height:38px; }
+.prop-btn { padding:9px 18px; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:.85rem; transition:background .2s; }
+.prop-approve { background:#2c7a3a; color:#fff; }
+.prop-approve:hover { background:#205a29; }
+.prop-reject { background:#fff; color:#c0392b; border:1.5px solid #c0392b; }
+.prop-reject:hover { background:#fdecea; }
+.prop-status { font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:3px 8px; border-radius:3px; }
+.prop-status.pending { background:#fff5e0; color:#a37200; }
+.prop-status.approved { background:#e8f5e9; color:#2c7a3a; }
+.prop-status.rejected { background:#fdecea; color:#c0392b; }
+.prop-empty { color:#888; font-style:italic; padding:18px 0; }
+</style>
+<div class="prop-page">
+    <h2 style="font-size:1.6rem;font-weight:800;color:#1a1a1a;margin-bottom:6px;">Edit Proposals</h2>
+    <p style="color:#666;font-size:.92rem;margin-bottom:24px;">Review proposed edits to your entries, and track edits you've suggested for others.</p>
+
+    <div class="prop-section">
+        <h3 class="section-title">Awaiting your decision</h3>
+        {% for item in incoming %}
+            {% with p=item.p %}
+            <div class="prop-card">
+                <div class="prop-head">
+                    <h4>
+                        Proposed edit on
+                        <a href="{{ p.target_detail_url }}">
+                            {% if p.recipe %}{{ p.recipe.title }}
+                            {% elif p.ingredient %}{{ p.ingredient.name }}
+                            {% elif p.technique %}{{ p.technique.name }}{% endif %}
+                        </a>
+                    </h4>
+                    <span class="prop-meta">by {{ p.proposer.first_name }} {{ p.proposer.last_name }} · {{ p.created_at|date:"M j, Y, g:i a" }}</span>
+                </div>
+                {% if p.note %}<div class="prop-note">{{ p.note }}</div>{% endif %}
+                <table class="diff-table">
+                    <thead>
+                        <tr><th>Field</th><th>Current</th><th>Proposed</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for d in item.diff %}
+                        <tr>
+                            <td class="field-name">{{ d.label }}</td>
+                            <td class="old-val">{{ d.old }}</td>
+                            <td class="new-val">{{ d.new }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <form method="post" action="/proposals/{{ p.pk }}/decide/" class="prop-actions">
+                    <textarea name="decision_note" placeholder="Decision note (optional)…" rows="1"></textarea>
+                    <button type="submit" name="decision" value="approve" class="prop-btn prop-approve">Approve</button>
+                    <button type="submit" name="decision" value="reject" class="prop-btn prop-reject">Reject</button>
+                </form>
+            </div>
+            {% endwith %}
+        {% empty %}
+            <p class="prop-empty">No proposals waiting for your review.</p>
+        {% endfor %}
+    </div>
+
+    <div class="prop-section">
+        <h3 class="section-title">Your proposals</h3>
+        {% for p in outgoing %}
+            <div class="prop-card">
+                <div class="prop-head">
+                    <h4>
+                        Edit on
+                        <a href="{{ p.target_detail_url }}">
+                            {% if p.recipe %}{{ p.recipe.title }}
+                            {% elif p.ingredient %}{{ p.ingredient.name }}
+                            {% elif p.technique %}{{ p.technique.name }}{% endif %}
+                        </a>
+                    </h4>
+                    <span class="prop-status {{ p.status }}">{{ p.get_status_display }}</span>
+                </div>
+                <p class="prop-meta">Submitted {{ p.created_at|date:"M j, Y, g:i a" }}{% if p.decided_at %} · decided {{ p.decided_at|date:"M j, Y, g:i a" }}{% endif %}</p>
+                {% if p.decision_note %}<div class="prop-note">{{ p.decision_note }}</div>{% endif %}
+            </div>
+        {% empty %}
+            <p class="prop-empty">You haven't proposed any edits yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
