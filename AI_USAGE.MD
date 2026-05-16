@@ -1,4 +1,4 @@
-1. AI Use Declaration
+AI Use Declaration
 AI-assisted tools were used during the project. Each use is disclosed below with the tool, task, level of reliance, and how the output was validated. All produced artefacts were reviewed, tested, and integrated by the author; no AI output was committed without inspection.
 
 Claude Sonnet
